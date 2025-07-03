@@ -1,0 +1,71 @@
+services:
+  evidently-service:
+    image: evidently/evidently-service:latest
+    container_name: evidently-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./workspace:/app/workspace
+      - evidently_data:/app/data
+    environment:
+      - EVIDENTLY_WORKSPACE_PATH=/app/workspace
+    depends_on:
+      - minio
+    networks:
+      - evidently-network
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    container_name: evidently-minio
+    ports:
+      - "9000:9000"  # MinIO API
+      - "9001:9001"  # MinIO Console
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+      - MINIO_DEFAULT_BUCKETS=evidently-workspace
+    command: server /data --console-address ":9001"
+    networks:
+      - evidently-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Serviço para criar o bucket automaticamente no MinIO
+  minio-init:
+    image: minio/mc:latest
+    container_name: evidently-minio-init
+    depends_on:
+      - minio
+    environment:
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin123
+    networks:
+      - evidently-network
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set myminio http://minio:9000 minioadmin minioadmin123; do
+        echo 'Aguardando MinIO...';
+        sleep 2;
+      done;
+      mc mb myminio/evidently-workspace --ignore-existing;
+      mc policy set public myminio/evidently-workspace;
+      echo 'Bucket evidently-workspace criado com sucesso!';
+      "
+
+volumes:
+  minio_data:
+    driver: local
+  evidently_data:
+    driver: local
+
+networks:
+  evidently-network:
+    driver: bridge 
