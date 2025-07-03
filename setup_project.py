@@ -4,6 +4,7 @@ Script de Configuração Inicial - EvidentlyAI Server
 
 Este script ajuda a configurar o projeto EvidentlyAI Server automaticamente,
 incluindo verificação de dependências, criação de diretórios e configurações iniciais.
+Focado exclusivamente em monitoramento de modelos de Machine Learning.
 
 Execute: python setup_project.py
 

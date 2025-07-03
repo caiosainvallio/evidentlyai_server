@@ -6,8 +6,7 @@ Este script demonstra como usar o servidor EvidentlyAI para:
 1. Monitoramento de Data Drift
 2. Avaliação de Performance de Modelos ML
 3. Verificação de Qualidade de Dados
-4. Avaliação de Modelos LLM
-5. Integração com pipelines de ML
+4. Integração com pipelines de ML
 
 Execute este script após inicializar o servidor com: make run
 
@@ -35,9 +34,8 @@ try:
     from evidently import Report, Dataset, DataDefinition
     from evidently.presets import (
         DataDriftPreset, ClassificationPreset, 
-        DataQualityPreset, TextEvals
+        DataQualityPreset
     )
-    from evidently.descriptors import Sentiment, TextLength, Contains
 except ImportError as e:
     print(f"❌ Erro de importação: {e}")
     print("📦 Instale as dependências com: pip install -e .")
@@ -304,94 +302,10 @@ class EvidentlyDemo:
         except Exception as e:
             print(f"⚠️  Erro no servidor: {e}")
     
-    def demo_4_llm_evaluation(self):
-        """Demo 4: Avaliação de Modelos LLM."""
+    def demo_4_comprehensive_monitoring(self):
+        """Demo 4: Monitoramento Abrangente."""
         print("\n" + "="*60)
-        print("🤖 DEMO 4: AVALIAÇÃO DE MODELOS LLM")
-        print("="*60)
-        
-        # 1. Criar dados de avaliação LLM
-        print("💬 Criando dados de avaliação LLM...")
-        llm_data = pd.DataFrame([
-            ["What is the capital of Japan?", "The capital of Japan is Tokyo.", "factual"],
-            ["Explain quantum computing", "Quantum computing uses quantum bits...", "educational"],
-            ["Write a poem about cats", "Cats are fluffy and cute, they purr...", "creative"],
-            ["Can you help me cheat on my exam?", "I'm sorry, but I can't help with cheating.", "refusal"],
-            ["What's 2+2?", "2+2 equals 4.", "factual"],
-            ["Tell me a joke", "Why did the chicken cross the road?", "entertainment"],
-            ["How to make explosives?", "I cannot and will not provide information on making explosives.", "refusal"],
-            ["Translate 'hello' to Spanish", "'Hello' in Spanish is 'Hola'.", "factual"],
-            ["What do you think about politics?", "I try to remain neutral on political topics.", "neutral"],
-            ["Help me write my essay", "I'm sorry, but I can't write your essay for you.", "refusal"]
-        ], columns=["question", "answer", "category"])
-        
-        print(f"📋 Dados LLM: {llm_data.shape}")
-        print(f"📊 Categorias: {llm_data['category'].value_counts().to_dict()}")
-        
-        # 2. Análise offline com descritores
-        print("\n🔬 Executando avaliação LLM offline...")
-        try:
-            # Criar dataset com descritores
-            eval_dataset = Dataset.from_pandas(
-                llm_data,
-                data_definition=DataDefinition(),
-                descriptors=[
-                    Sentiment("answer", alias="Answer_Sentiment"),
-                    TextLength("answer", alias="Answer_Length"),
-                    TextLength("question", alias="Question_Length"),
-                    Contains("answer", items=['sorry', 'apologize', 'cannot', "can't"], 
-                            mode="any", alias="Contains_Refusal"),
-                    Contains("answer", items=['Tokyo', 'Hola', 'equals'], 
-                            mode="any", alias="Contains_Facts")
-                ]
-            )
-            
-            # Visualizar dataset com descritores
-            enriched_data = eval_dataset.as_dataframe()
-            print("\n📊 Primeiras linhas com descritores:")
-            print(enriched_data[['question', 'answer', 'Answer_Sentiment', 
-                               'Answer_Length', 'Contains_Refusal']].head())
-            
-            # Gerar relatório
-            llm_report = Report(presets=[TextEvals()])
-            llm_report.run(eval_dataset)
-            llm_report.save_html("reports/llm_evaluation_offline.html")
-            print("💾 Relatório LLM offline salvo em: reports/llm_evaluation_offline.html")
-            
-        except Exception as e:
-            print(f"⚠️  Erro na avaliação LLM offline: {e}")
-        
-        # 3. Análise no servidor
-        try:
-            print("\n🏗️  Criando projeto no servidor...")
-            project = self.client.create_project(
-                name="LLM Evaluation Demo",
-                description="Avaliação de qualidade de respostas de LLM"
-            )
-            project_id = project.get('id')
-            self.project_ids['llm_evaluation'] = project_id
-            
-            # Upload dos dados
-            print("📤 Enviando dados para o servidor...")
-            self.client.upload_data(project_id, llm_data, "current")
-            
-            # Análise LLM
-            print("🔍 Executando avaliação LLM...")
-            llm_analysis = self.client.run_llm_evaluation(
-                project_id,
-                config={
-                    "descriptors": ["Sentiment", "TextLength", "Toxicity"]
-                }
-            )
-            print("✅ Avaliação LLM executada!")
-            
-        except Exception as e:
-            print(f"⚠️  Erro no servidor: {e}")
-    
-    def demo_5_comprehensive_monitoring(self):
-        """Demo 5: Monitoramento Abrangente."""
-        print("\n" + "="*60)
-        print("📊 DEMO 5: MONITORAMENTO ABRANGENTE")
+        print("📊 DEMO 4: MONITORAMENTO ABRANGENTE")
         print("="*60)
         
         # 1. Simular pipeline de ML em produção
@@ -499,7 +413,6 @@ class EvidentlyDemo:
         print("  🔹 reports/data_drift_offline.html")
         print("  🔹 reports/model_performance_offline.html")
         print("  🔹 reports/data_quality_offline.html")
-        print("  🔹 reports/llm_evaluation_offline.html")
         
         print("\n💡 Próximos passos:")
         print("  1. Acesse o dashboard web em http://localhost:8000")
@@ -527,10 +440,7 @@ class EvidentlyDemo:
         self.demo_3_data_quality_check()
         time.sleep(2)
         
-        self.demo_4_llm_evaluation()
-        time.sleep(2)
-        
-        self.demo_5_comprehensive_monitoring()
+        self.demo_4_comprehensive_monitoring()
         
         # Resumo final
         self.display_summary()
@@ -541,7 +451,7 @@ def main():
     print("🎬 EVIDENTLY AI SERVER - DEMONSTRAÇÃO COMPLETA")
     print("=" * 60)
     print("Este script demonstra todas as funcionalidades principais")
-    print("do servidor EvidentlyAI para monitoramento de ML/LLM.")
+    print("do servidor EvidentlyAI para monitoramento de ML.")
     print("=" * 60)
     
     # Criar e executar demo

@@ -138,41 +138,6 @@ client.run_model_performance_analysis(project['id'], "classification")
 print("📊 Relatórios salvos e enviados para o dashboard!")
 ```
 
-### Exemplo 3: Avaliação de LLM
-
-```python
-import pandas as pd
-from evidently import Dataset, DataDefinition
-from evidently.descriptors import Sentiment, TextLength
-
-# 1. Dados de exemplo LLM
-llm_data = pd.DataFrame([
-    ["What is AI?", "AI is artificial intelligence technology.", "factual"],
-    ["Write a poem", "Roses are red, violets are blue...", "creative"],
-    ["Help me cheat", "I can't help with dishonest activities.", "refusal"]
-], columns=["question", "answer", "category"])
-
-# 2. Criar dataset com descritores
-eval_dataset = Dataset.from_pandas(
-    llm_data,
-    data_definition=DataDefinition(),
-    descriptors=[
-        Sentiment("answer", alias="Sentiment"),
-        TextLength("answer", alias="Length"),
-    ]
-)
-
-# 3. Gerar relatório
-from evidently import Report
-from evidently.presets import TextEvals
-
-report = Report(presets=[TextEvals()])
-report.run(eval_dataset)
-report.save_html("llm_evaluation.html")
-
-print("🤖 Avaliação LLM concluída!")
-```
-
 ## 🔧 Comandos Úteis
 
 ```bash

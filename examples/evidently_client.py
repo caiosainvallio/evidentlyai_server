@@ -234,26 +234,7 @@ class EvidentlyClient:
         
         return self._run_analysis(project_id, "data_quality", payload)
     
-    def run_llm_evaluation(self, project_id: str,
-                          config: Optional[Dict] = None) -> Dict[str, Any]:
-        """
-        Executar avaliação de LLM.
-        
-        Args:
-            project_id: ID do projeto
-            config: Configurações adicionais
-            
-        Returns:
-            Resultado da avaliação
-        """
-        payload = {
-            "preset": "TextEvals",
-            "config": config or {
-                "descriptors": ["Sentiment", "TextLength", "Toxicity"]
-            }
-        }
-        
-        return self._run_analysis(project_id, "llm_evaluation", payload)
+
     
     def _run_analysis(self, project_id: str, analysis_type: str,
                      payload: Dict[str, Any]) -> Dict[str, Any]:

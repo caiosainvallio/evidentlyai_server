@@ -1,7 +1,7 @@
 [project]
 name = "evidentlyai-server"
 version = "0.1.0"
-description = "Servidor EvidentlyAI para monitoramento e avaliação de modelos ML/LLM"
+description = "Servidor EvidentlyAI para monitoramento e avaliação de modelos ML"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

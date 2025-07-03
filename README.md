@@ -1,6 +1,6 @@
 # 📊 EvidentlyAI Server
 
-**Servidor EvidentlyAI para monitoramento e avaliação de modelos ML/LLM com interface visual completa.**
+**Servidor EvidentlyAI para monitoramento e avaliação de modelos ML com interface visual completa.**
 
 [![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://python.org)
 [![EvidentlyAI](https://img.shields.io/badge/EvidentlyAI-0.7.9+-green.svg)](https://evidentlyai.com)
@@ -25,7 +25,7 @@
 
 Este projeto fornece uma configuração completa do **EvidentlyAI** com Docker, incluindo:
 
-- **Evidently Service**: Servidor principal para avaliação e monitoramento de ML/LLM
+- **Evidently Service**: Servidor principal para avaliação e monitoramento de ML
 - **MinIO**: Storage de objetos para armazenamento de dados e relatórios
 - **Interface Web**: Dashboard interativo para visualização de métricas
 - **Scripts Python**: Exemplos práticos de integração via API
@@ -34,11 +34,10 @@ Este projeto fornece uma configuração completa do **EvidentlyAI** com Docker, 
 
 O [EvidentlyAI](https://evidentlyai.com) é uma framework open-source para:
 
-- ✅ **Avaliação de Modelos**: 100+ métricas para ML e LLM
+- ✅ **Avaliação de Modelos**: 100+ métricas para ML
 - 📊 **Monitoramento**: Detecção de drift de dados e performance
 - 🧪 **Testes**: Test suites com condições pass/fail
 - 📈 **Reports**: Relatórios visuais interativos
-- 🤖 **LLM Evaluation**: Métricas específicas para Large Language Models
 
 ## 🚀 Funcionalidades
 
@@ -47,12 +46,6 @@ O [EvidentlyAI](https://evidentlyai.com) é uma framework open-source para:
 - **Model Performance**: Métricas de classificação, regressão, ranking
 - **Data Quality**: Validação de qualidade dos dados
 - **Feature Monitoring**: Monitoramento de features específicas
-
-### 🤖 Avaliação de LLMs
-- **Semantic Similarity**: Similaridade semântica entre textos
-- **Text Quality**: Avaliação de qualidade de texto gerado
-- **LLM-as-a-Judge**: Uso de LLMs para avaliar outros LLMs
-- **RAG Evaluation**: Métricas específicas para sistemas RAG
 
 ### 🔧 Funcionalidades Técnicas
 - **Dashboard Web**: Interface visual rica e interativa
@@ -197,42 +190,6 @@ report = Report(presets=[ClassificationPreset()])
 report.run(reference_data=None, current_data=test_data)
 
 # 4. Enviar para servidor
-client.send_report(project.id, report)
-```
-
-### Experimento 3: Avaliação de LLM
-
-```python
-from evidently import Report, Dataset, DataDefinition
-from evidently.descriptors import Sentiment, TextLength, Contains
-from evidently.presets import TextEvals
-
-# 1. Preparar dados de avaliação LLM
-llm_data = pd.DataFrame([
-    ["What is the capital of Japan?", "The capital of Japan is Tokyo."],
-    ["Who painted the Mona Lisa?", "Leonardo da Vinci painted the Mona Lisa."],
-    ["Can you write my homework?", "I'm sorry, but I can't help with homework."]
-], columns=["question", "answer"])
-
-# 2. Criar dataset com descritores
-eval_dataset = Dataset.from_pandas(
-    llm_data,
-    data_definition=DataDefinition(),
-    descriptors=[
-        Sentiment("answer", alias="Sentiment"),
-        TextLength("answer", alias="Length"),
-        Contains("answer", items=['sorry', 'apologize'], mode="any", alias="Denials")
-    ]
-)
-
-# 3. Gerar relatório
-report = Report(presets=[TextEvals()])
-report.run(eval_dataset)
-
-# 4. Visualizar localmente
-report.show()
-
-# 5. Enviar para servidor
 client.send_report(project.id, report)
 ```
 
