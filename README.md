@@ -1,573 +1,714 @@
-# 📊 EvidentlyAI Server
+# EvidentlyAI Server
 
-**Servidor EvidentlyAI para monitoramento e avaliação de modelos ML com interface visual completa.**
-
-[![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://python.org)
-[![EvidentlyAI](https://img.shields.io/badge/EvidentlyAI-0.7.9+-green.svg)](https://evidentlyai.com)
-[![Docker](https://img.shields.io/badge/Docker-✓-blue.svg)](https://docker.com)
-[![MinIO](https://img.shields.io/badge/MinIO-✓-red.svg)](https://min.io)
+Servidor EvidentlyAI para monitoramento de modelos ML com Docker Compose. Esta implementação fornece uma solução completa para deploy do EvidentlyAI com MinIO como storage backend, ideal para ambientes de produção e desenvolvimento.
 
 ## 📋 Índice
 
-- [Sobre o Projeto](#sobre-o-projeto)
-- [Funcionalidades](#funcionalidades)
-- [Pré-requisitos](#pré-requisitos)
-- [Instalação e Configuração](#instalação-e-configuração)
-- [Uso Básico](#uso-básico)
-- [Guia de Experimentos](#guia-de-experimentos)
-- [Exemplos Práticos](#exemplos-práticos)
-- [API e Integração](#api-e-integração)
-- [Monitoramento em Produção](#monitoramento-em-produção)
-- [Troubleshooting](#troubleshooting)
-- [Contribuição](#contribuição)
+- [Início Rápido](#-início-rápido)
+- [Pré-requisitos](#-pré-requisitos)
+- [Instalação](#-instalação)
+- [Configuração](#️-configuração)
+- [Uso](#-uso)
+- [Serviços](#-serviços)
+- [Comandos Disponíveis](#-comandos-disponíveis)
+- [Integração](#-integração)
+- [Troubleshooting](#-troubleshooting)
+- [Produção](#-produção)
+- [Contribuição](#-contribuição)
 
-## 🎯 Sobre o Projeto
+## 🚀 Início Rápido
 
-Este projeto fornece uma configuração completa do **EvidentlyAI** com Docker, incluindo:
+```bash
+# 1. Clone o repositório
+git clone <repository-url>
+cd evidentlyai_server
 
-- **Evidently Service**: Servidor principal para avaliação e monitoramento de ML
-- **MinIO**: Storage de objetos para armazenamento de dados e relatórios
-- **Interface Web**: Dashboard interativo para visualização de métricas
-- **Scripts Python**: Exemplos práticos de integração via API
+# 2. Configurar variáveis de ambiente (opcional)
+cp env.example .env
 
-### O que é o EvidentlyAI?
+# 3. Iniciar serviços
+make run
 
-O [EvidentlyAI](https://evidentlyai.com) é uma framework open-source para:
+# 4. Verificar se está funcionando
+make status
 
-- ✅ **Avaliação de Modelos**: 100+ métricas para ML
-- 📊 **Monitoramento**: Detecção de drift de dados e performance
-- 🧪 **Testes**: Test suites com condições pass/fail
-- 📈 **Reports**: Relatórios visuais interativos
-
-## 🚀 Funcionalidades
-
-### 📈 Monitoramento de Modelos ML
-- **Data Drift**: Detecção de mudanças na distribuição dos dados
-- **Model Performance**: Métricas de classificação, regressão, ranking
-- **Data Quality**: Validação de qualidade dos dados
-- **Feature Monitoring**: Monitoramento de features específicas
-
-### 🔧 Funcionalidades Técnicas
-- **Dashboard Web**: Interface visual rica e interativa
-- **API REST**: Integração programática completa
-- **Storage Persistente**: Armazenamento com MinIO
-- **Docker Setup**: Configuração containerizada
-- **Export de Dados**: JSON, HTML, Python dict
+# 5. Acessar dashboard
+open http://localhost:8000
+```
 
 ## 📋 Pré-requisitos
 
-- **Docker** 20.10+ e **Docker Compose** 2.0+
-- **Python** 3.13+
-- **Git**
-- **Make** (opcional, para comandos simplificados)
+### Software Necessário
+- **Docker**: versão 20.10+
+- **Docker Compose**: versão 2.0+
+- **Make**: para comandos simplificados (opcional)
 
-### Verificação dos Pré-requisitos
-
+### Verificar Instalação
 ```bash
-# Verificar versões
+# Verificar Docker
 docker --version
 docker-compose --version
-python --version
-git --version
+
+# Verificar portas disponíveis
+netstat -an | grep -E ':(8000|9000|9001)'
 ```
 
-## 🛠 Instalação e Configuração
+### Recursos de Sistema
+- **RAM**: mínimo 2GB, recomendado 4GB+
+- **Disk**: mínimo 5GB livres
+- **CPU**: 2+ cores recomendados
 
-### 1. Clone do Repositório
+## 📦 Instalação
 
+### Método 1: Clone do Repositório
 ```bash
-git clone <your-repo-url>
+git clone <repository-url>
 cd evidentlyai_server
 ```
 
-### 2. Configuração do Ambiente
-
+### Método 2: Download Manual
 ```bash
-# Criar ambiente virtual
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate  # Windows
-
-# Instalar dependências
-pip install -e .
+# Baixar apenas os arquivos essenciais
+wget <repository-url>/docker-compose.yaml
+wget <repository-url>/Makefile
+wget <repository-url>/env.example
 ```
 
-### 3. Inicialização dos Serviços
-
+### Verificação da Instalação
 ```bash
-# Construir e iniciar todos os serviços
+# Verificar arquivos necessários
+ls -la docker-compose.yaml Makefile env.example
+
+# Testar sintaxe do docker-compose
+docker-compose config
+```
+
+## ⚙️ Configuração
+
+### Variáveis de Ambiente
+
+Copie e edite o arquivo de configuração:
+```bash
+cp env.example .env
+nano .env  # ou vim, code, etc.
+```
+
+#### Configurações Principais
+
+| Variável | Padrão | Descrição |
+|----------|--------|-----------|
+| `EVIDENTLY_SERVER_HOST` | `localhost` | Host do servidor EvidentlyAI |
+| `EVIDENTLY_SERVER_PORT` | `8000` | Porta do servidor EvidentlyAI |
+| `EVIDENTLY_WORKSPACE_PATH` | `./workspace` | Caminho do workspace local |
+| `MINIO_ROOT_USER` | `minioadmin` | Usuário admin do MinIO |
+| `MINIO_ROOT_PASSWORD` | `minioadmin123` | Senha admin do MinIO |
+| `MINIO_DEFAULT_BUCKET` | `evidently-workspace` | Bucket padrão |
+
+#### Configurações de Produção
+```bash
+# Para ambientes de produção, altere:
+EVIDENTLY_SERVER_HOST=0.0.0.0
+MINIO_ROOT_PASSWORD=senha-super-secreta
+DEBUG_MODE=false
+LOG_LEVEL=WARNING
+```
+
+### Configuração de Rede
+
+#### Portas Utilizadas
+- **8000**: EvidentlyAI Dashboard
+- **9000**: MinIO API
+- **9001**: MinIO Console
+
+#### Customizar Portas
+Para alterar as portas, edite o `docker-compose.yaml`:
+```yaml
+services:
+  evidently-service:
+    ports:
+      - "8080:8000"  # Alterar porta externa
+```
+
+### Volumes e Persistência
+
+#### Volumes Configurados
+- `./workspace`: Dados do workspace EvidentlyAI (bind mount)
+- `minio_data`: Dados do MinIO (volume Docker)
+- `evidently_data`: Cache e dados temporários (volume Docker)
+
+#### Backup dos Dados
+```bash
+# Backup do workspace
+tar -czf backup-workspace-$(date +%Y%m%d).tar.gz ./workspace
+
+# Backup dos volumes Docker
+docker run --rm -v evidentlyai_server_minio_data:/data -v $(pwd):/backup busybox tar czf /backup/minio-backup-$(date +%Y%m%d).tar.gz /data
+```
+
+## 🔧 Uso
+
+### Inicialização dos Serviços
+
+#### Primeira Execução
+```bash
+# Build das imagens (se necessário)
+make build
+
+# Iniciar em background
 make run
 
-# Ou usando docker-compose diretamente
-docker-compose up -d
+# Aguardar inicialização (30-60s)
+sleep 30
+
+# Verificar saúde dos serviços
+make status
 ```
 
-### 4. Verificação da Instalação
-
+#### Verificação de Saúde
 ```bash
-# Verificar status dos serviços
+# Status dos containers
 make status
 
-# Acompanhar logs
-make logs
-```
-
-## 🎮 Uso Básico
-
-### Acessando os Serviços
-
-Após inicializar, os seguintes serviços estarão disponíveis:
-
-- **EvidentlyAI UI**: http://localhost:8000
-- **MinIO Console**: http://localhost:9001
-  - Usuário: `minioadmin`
-  - Senha: `minioadmin123`
-
-### Primeiro Experimento
-
-```bash
-# Executar exemplo demo
-make demo
-
-# Ou diretamente
-python examples/remote_demo_project.py
-```
-
-## 📚 Guia de Experimentos
-
-### Experimento 1: Avaliação de Data Drift
-
-```python
-import pandas as pd
-from evidently import Report
-from evidently.presets import DataDriftPreset
-from examples.evidently_client import EvidentlyClient
-
-# 1. Preparar dados
-reference_data = pd.read_csv('data/reference.csv')
-current_data = pd.read_csv('data/current.csv')
-
-# 2. Criar cliente
-client = EvidentlyClient(base_url='http://localhost:8000')
-
-# 3. Criar projeto
-project = client.create_project("Data Drift Analysis", "Análise de drift em dados de produção")
-
-# 4. Executar avaliação
-report = Report(presets=[DataDriftPreset()])
-report.run(reference_data=reference_data, current_data=current_data)
-
-# 5. Enviar para servidor
-client.send_report(project.id, report)
-```
-
-### Experimento 2: Monitoramento de Performance de Modelo ML
-
-```python
-from evidently.presets import ClassificationPreset
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-
-# 1. Preparar dados e modelo
-iris = load_iris(as_frame=True)
-X_train, X_test, y_train, y_test = train_test_split(
-    iris.data, iris.target, test_size=0.3, random_state=42
-)
-
-model = RandomForestClassifier(random_state=42)
-model.fit(X_train, y_train)
-predictions = model.predict(X_test)
-
-# 2. Preparar dados para avaliação
-test_data = X_test.copy()
-test_data['target'] = y_test
-test_data['prediction'] = predictions
-
-# 3. Criar relatório de classificação
-report = Report(presets=[ClassificationPreset()])
-report.run(reference_data=None, current_data=test_data)
-
-# 4. Enviar para servidor
-client.send_report(project.id, report)
-```
-
-## 🔧 Exemplos Práticos
-
-### Script de Monitoramento Contínuo
-
-```python
-import time
-import schedule
-from examples.evidently_client import EvidentlyClient
-from examples.data_generator import generate_synthetic_data
-
-def daily_monitoring():
-    """Executa monitoramento diário automaticamente"""
-    client = EvidentlyClient()
-    
-    # Gerar dados sintéticos (substitua pela sua fonte de dados)
-    current_data = generate_synthetic_data()
-    
-    # Executar avaliações
-    drift_report = client.run_data_drift_analysis(current_data)
-    quality_report = client.run_data_quality_check(current_data)
-    
-    print(f"Relatórios enviados: {drift_report.id}, {quality_report.id}")
-
-# Agendar execução diária
-schedule.every().day.at("09:00").do(daily_monitoring)
-
-while True:
-    schedule.run_pending()
-    time.sleep(60)
-```
-
-### Integração com Pipeline ML
-
-```python
-def model_validation_pipeline(model, X_test, y_test, X_reference, y_reference):
-    """Pipeline de validação de modelo integrado com Evidently"""
-    
-    # 1. Fazer predições
-    predictions = model.predict(X_test)
-    probabilities = model.predict_proba(X_test)
-    
-    # 2. Preparar dados
-    test_data = X_test.copy()
-    test_data['target'] = y_test
-    test_data['prediction'] = predictions
-    
-    reference_data = X_reference.copy()
-    reference_data['target'] = y_reference
-    
-    # 3. Executar avaliações
-    client = EvidentlyClient()
-    
-    # Data Drift
-    drift_report = Report(presets=[DataDriftPreset()])
-    drift_report.run(reference_data, test_data)
-    
-    # Model Performance
-    perf_report = Report(presets=[ClassificationPreset()])
-    perf_report.run(reference_data, test_data)
-    
-    # 4. Verificar resultados
-    drift_results = drift_report.as_dict()
-    perf_results = perf_report.as_dict()
-    
-    # 5. Tomar decisões baseadas nos resultados
-    if drift_results['metrics'][0]['result']['drift_detected']:
-        print("⚠️  Data drift detectado! Considere retreinar o modelo.")
-        return False
-    
-    accuracy = perf_results['metrics'][0]['result']['current']['accuracy']
-    if accuracy < 0.85:
-        print(f"⚠️  Accuracy baixa: {accuracy:.3f}. Modelo precisa ser melhorado.")
-        return False
-    
-    print("✅ Modelo validado com sucesso!")
-    return True
-```
-
-## 🌐 API e Integração
-
-### Cliente Python Personalizado
-
-```python
-class EvidentlyClient:
-    def __init__(self, base_url="http://localhost:8000"):
-        self.base_url = base_url
-        self.session = requests.Session()
-    
-    def create_project(self, name, description=""):
-        """Criar novo projeto"""
-        response = self.session.post(
-            f"{self.base_url}/api/projects",
-            json={"name": name, "description": description}
-        )
-        return response.json()
-    
-    def upload_data(self, project_id, data, data_type="reference"):
-        """Upload de dados para projeto"""
-        files = {'file': ('data.csv', data.to_csv(), 'text/csv')}
-        response = self.session.post(
-            f"{self.base_url}/api/projects/{project_id}/data/{data_type}",
-            files=files
-        )
-        return response.json()
-    
-    def run_report(self, project_id, preset_name, config=None):
-        """Executar relatório"""
-        payload = {
-            "preset": preset_name,
-            "config": config or {}
-        }
-        response = self.session.post(
-            f"{self.base_url}/api/projects/{project_id}/reports",
-            json=payload
-        )
-        return response.json()
-    
-    def get_report(self, project_id, report_id):
-        """Obter relatório específico"""
-        response = self.session.get(
-            f"{self.base_url}/api/projects/{project_id}/reports/{report_id}"
-        )
-        return response.json()
-```
-
-### Integração via cURL
-
-```bash
-# Criar projeto
-curl -X POST http://localhost:8000/api/projects \
-  -H "Content-Type: application/json" \
-  -d '{"name": "My Project", "description": "Test project"}'
-
-# Upload de dados
-curl -X POST http://localhost:8000/api/projects/{project_id}/data/reference \
-  -F "file=@reference_data.csv"
-
-# Executar relatório
-curl -X POST http://localhost:8000/api/projects/{project_id}/reports \
-  -H "Content-Type: application/json" \
-  -d '{"preset": "DataDriftPreset", "config": {}}'
-```
-
-## 📊 Monitoramento em Produção
-
-### Configuração de Alertas
-
-```python
-class AlertManager:
-    def __init__(self, client):
-        self.client = client
-        self.thresholds = {
-            'data_drift': 0.1,
-            'accuracy_drop': 0.05,
-            'missing_values': 0.02
-        }
-    
-    def check_alerts(self, report_results):
-        """Verificar se alertas devem ser disparados"""
-        alerts = []
-        
-        # Verificar data drift
-        if report_results.get('drift_score', 0) > self.thresholds['data_drift']:
-            alerts.append({
-                'type': 'data_drift',
-                'severity': 'high',
-                'message': 'Data drift detectado acima do threshold'
-            })
-        
-        # Verificar queda de performance
-        current_accuracy = report_results.get('accuracy', 1.0)
-        baseline_accuracy = report_results.get('baseline_accuracy', 1.0)
-        
-        if (baseline_accuracy - current_accuracy) > self.thresholds['accuracy_drop']:
-            alerts.append({
-                'type': 'performance_drop',
-                'severity': 'medium',
-                'message': f'Accuracy caiu de {baseline_accuracy:.3f} para {current_accuracy:.3f}'
-            })
-        
-        return alerts
-    
-    def send_alerts(self, alerts):
-        """Enviar alertas (implementar integração com Slack, email, etc.)"""
-        for alert in alerts:
-            print(f"🚨 ALERT [{alert['severity']}]: {alert['message']}")
-            # Implementar envio real aqui
-```
-
-### Dashboard Customizado
-
-```python
-import streamlit as st
-import plotly.express as px
-
-def create_monitoring_dashboard():
-    """Criar dashboard customizado com Streamlit"""
-    
-    st.title("🔍 ML Model Monitoring Dashboard")
-    
-    # Sidebar para seleção
-    st.sidebar.header("Configurações")
-    project_id = st.sidebar.selectbox("Projeto", get_project_list())
-    time_range = st.sidebar.selectbox("Período", ["7d", "30d", "90d"])
-    
-    # Métricas principais
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("Accuracy", "94.2%", "+1.2%")
-    with col2:
-        st.metric("Data Drift", "0.05", "-0.02")
-    with col3:
-        st.metric("Missing Values", "0.1%", "0.0%")
-    with col4:
-        st.metric("Predictions/day", "1,234", "+56")
-    
-    # Gráficos
-    st.subheader("📈 Performance ao Longo do Tempo")
-    
-    # Exemplo de dados (substitua por dados reais)
-    performance_data = get_performance_data(project_id, time_range)
-    fig = px.line(performance_data, x='date', y='accuracy', title='Model Accuracy')
-    st.plotly_chart(fig, use_container_width=True)
-    
-    # Data drift heatmap
-    st.subheader("🔥 Heatmap de Data Drift")
-    drift_data = get_drift_data(project_id, time_range)
-    fig_heatmap = px.imshow(drift_data, title='Feature Drift Over Time')
-    st.plotly_chart(fig_heatmap, use_container_width=True)
-
-if __name__ == "__main__":
-    create_monitoring_dashboard()
-```
-
-## 🐛 Troubleshooting
-
-### Problemas Comuns
-
-#### 1. Erro de Conexão com MinIO
-```bash
-# Verificar se MinIO está rodando
-docker-compose ps minio
-
-# Restart do MinIO
-docker-compose restart minio
-
-# Verificar logs
-make logs-minio
-```
-
-#### 2. Evidently Service não Responde
-```bash
-# Verificar logs do serviço
-make logs-evidently
-
-# Restart do serviço
-docker-compose restart evidently-service
-
-# Verificar se o workspace está montado corretamente
-ls -la ./workspace/
-```
-
-#### 3. Erro de Permissões no Workspace
-```bash
-# Corrigir permissões (Linux/Mac)
-sudo chown -R $USER:$USER ./workspace/
-chmod -R 755 ./workspace/
-```
-
-#### 4. Porta já em Uso
-```bash
-# Verificar processos usando as portas
-lsof -i :8000  # Evidently
-lsof -i :9000  # MinIO API
-lsof -i :9001  # MinIO Console
-
-# Parar serviços em conflito ou alterar portas no docker-compose.yaml
-```
-
-### Comandos de Diagnóstico
-
-```bash
-# Status completo dos serviços
-make status
-
-# Logs de todos os serviços
+# Logs em tempo real
 make logs
 
 # Logs específicos
 make logs-evidently
 make logs-minio
 
-# Limpeza completa (cuidado: remove todos os dados)
-make clear_all
-
-# Reconstruir serviços
-make build
+# Teste de conectividade
+curl -f http://localhost:8000/health || echo "EvidentlyAI não disponível"
+curl -f http://localhost:9000/minio/health/live || echo "MinIO não disponível"
 ```
 
-### Configuração de Debug
+### Acesso aos Serviços
 
+#### EvidentlyAI Dashboard
+- **URL**: http://localhost:8000
+- **Funcionalidades**:
+  - Visualização de projetos
+  - Reports e métricas
+  - Configuração de dashboards
+  - API REST
+
+#### MinIO Console
+- **URL**: http://localhost:9001
+- **Credenciais**: `minioadmin` / `minioadmin123`
+- **Funcionalidades**:
+  - Gerenciar buckets
+  - Upload/download de arquivos
+  - Configurações de acesso
+  - Monitoramento
+
+### Parada dos Serviços
+
+```bash
+# Parada normal
+make stop
+
+# Parada forçada (se necessário)
+docker-compose kill
+
+# Limpeza completa (remove tudo)
+make clear_all
+```
+
+## 🐳 Serviços
+
+### EvidentlyAI Service
+
+#### Especificações
+- **Imagem**: `evidently/evidently-service:latest`
+- **Porta**: 8000 (HTTP)
+- **Workspace**: `/app/workspace`
+- **Dependências**: MinIO
+
+#### Configurações
+```yaml
+environment:
+  - EVIDENTLY_WORKSPACE_PATH=/app/workspace
+volumes:
+  - ./workspace:/app/workspace
+  - evidently_data:/app/data
+```
+
+#### API Endpoints
+- `GET /` - Dashboard principal
+- `GET /api/projects` - Lista projetos
+- `GET /docs` - Documentação Swagger
+- `GET /health` - Health check
+
+### MinIO Storage
+
+#### Especificações
+- **Imagem**: `minio/minio:latest`
+- **API**: Porta 9000
+- **Console**: Porta 9001
+- **Storage**: `/data`
+
+#### Configurações
+```yaml
+environment:
+  - MINIO_ROOT_USER=minioadmin
+  - MINIO_ROOT_PASSWORD=minioadmin123
+command: server /data --console-address ":9001"
+```
+
+#### Health Check
+```yaml
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+  interval: 30s
+  timeout: 20s
+  retries: 3
+```
+
+### MinIO Init Service
+
+#### Funcionalidade
+- Cria bucket padrão automaticamente
+- Configura políticas de acesso
+- Executa uma única vez na inicialização
+
+#### Script de Inicialização
+```bash
+until mc alias set myminio http://minio:9000 minioadmin minioadmin123; do
+  echo 'Aguardando MinIO...';
+  sleep 2;
+done;
+mc mb myminio/evidently-workspace --ignore-existing;
+mc policy set public myminio/evidently-workspace;
+```
+
+## 🛠️ Comandos Disponíveis
+
+### Comandos Básicos
+
+| Comando | Descrição | Exemplo |
+|---------|-----------|---------|
+| `make build` | Construir imagens Docker | `make build` |
+| `make run` | Iniciar containers em background | `make run` |
+| `make stop` | Parar containers | `make stop` |
+| `make restart` | Reiniciar todos os serviços | `make restart` |
+| `make status` | Mostrar status dos containers | `make status` |
+
+### Comandos de Monitoramento
+
+| Comando | Descrição | Exemplo |
+|---------|-----------|---------|
+| `make logs` | Logs de todos os serviços | `make logs` |
+| `make logs-evidently` | Logs apenas do EvidentlyAI | `make logs-evidently` |
+| `make logs-minio` | Logs apenas do MinIO | `make logs-minio` |
+
+### Comandos de Limpeza
+
+| Comando | Descrição | Cuidado |
+|---------|-----------|---------|
+| `make clear_all` | Remove containers, volumes e imagens | ⚠️ Remove TODOS os dados |
+
+### Comandos Docker Diretos
+
+```bash
+# Execução direta (sem Makefile)
+docker-compose up -d
+docker-compose down
+docker-compose ps
+docker-compose logs -f
+
+# Comandos avançados
+docker-compose exec evidently-service bash
+docker-compose exec minio bash
+```
+
+## 🔗 Integração
+
+### Integração Python
+
+#### Instalação do Cliente
+```bash
+pip install evidently[server]
+```
+
+#### Exemplo Básico
 ```python
-import logging
+from evidently.ui.workspace import RemoteWorkspace
+from evidently import Report
+from evidently.presets import DataDriftPreset
 
-# Configurar logging detalhado
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+# Conectar ao workspace remoto
+workspace = RemoteWorkspace("http://localhost:8000")
+
+# Listar projetos existentes
+projects = workspace.list_projects()
+print(f"Projetos encontrados: {len(projects)}")
+
+# Criar novo projeto
+project = workspace.create_project(
+    name="ml-monitoring",
+    description="Monitoramento de modelo ML"
 )
 
-# Para debug do cliente
-import requests
-import http.client as http_client
+# Criar e enviar relatório
+report = Report(metrics=[DataDriftPreset()])
+report.run(reference_data=ref_data, current_data=current_data)
 
-http_client.HTTPConnection.debuglevel = 1
-requests_log = logging.getLogger("requests.packages.urllib3")
-requests_log.setLevel(logging.DEBUG)
-requests_log.propagate = True
+# Adicionar ao workspace
+workspace.add_report(project.id, report)
+```
+
+#### Script de Monitoramento Contínuo
+```python
+import schedule
+import time
+from evidently.ui.workspace import RemoteWorkspace
+from evidently import Report
+from evidently.presets import DataDriftPreset
+
+def monitor_data_drift():
+    workspace = RemoteWorkspace("http://localhost:8000")
+    # Sua lógica de monitoramento aqui
+    pass
+
+# Executar a cada hora
+schedule.every().hour.do(monitor_data_drift)
+
+while True:
+    schedule.run_pending()
+    time.sleep(60)
+```
+
+### Integração com CI/CD
+
+#### GitHub Actions
+```yaml
+name: ML Monitoring
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # A cada 6 horas
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: pip install evidently[server] pandas
+      - name: Run monitoring
+        run: python scripts/monitor.py
+        env:
+          EVIDENTLY_URL: ${{ secrets.EVIDENTLY_URL }}
+```
+
+### Integração com MLOps
+
+#### MLflow Integration
+```python
+import mlflow
+from evidently.ui.workspace import RemoteWorkspace
+
+# Ao final do treinamento MLflow
+with mlflow.start_run():
+    # ... seu código de treinamento ...
+    
+    # Enviar métricas para EvidentlyAI
+    workspace = RemoteWorkspace("http://localhost:8000")
+    # ... código de monitoramento ...
+```
+
+## 🔍 Troubleshooting
+
+### Problemas Comuns
+
+#### Portas em Uso
+```bash
+# Verificar processos usando as portas
+lsof -i :8000
+lsof -i :9000
+lsof -i :9001
+
+# Parar processos conflitantes
+sudo kill -9 $(lsof -t -i:8000)
+```
+
+#### Problemas de Permissão
+```bash
+# Corrigir permissões do workspace
+sudo chown -R $USER:$USER ./workspace
+chmod -R 755 ./workspace
+```
+
+#### Containers Não Iniciam
+```bash
+# Verificar logs de erro
+docker-compose logs evidently-service
+docker-compose logs minio
+
+# Verificar recursos do sistema
+docker system df
+docker system events &
+```
+
+#### MinIO Não Conecta
+```bash
+# Resetar configuração MinIO
+docker-compose down
+docker volume rm evidentlyai_server_minio_data
+docker-compose up -d
+```
+
+### Debugging Avançado
+
+#### Logs Detalhados
+```bash
+# Habilitar logs verbosos
+export COMPOSE_LOG_LEVEL=DEBUG
+docker-compose up
+
+# Logs do Docker daemon
+sudo journalctl -u docker.service
+```
+
+#### Acesso aos Containers
+```bash
+# Shell no container EvidentlyAI
+docker-compose exec evidently-service bash
+
+# Shell no container MinIO
+docker-compose exec minio bash
+
+# Verificar conectividade entre containers
+docker-compose exec evidently-service ping minio
+```
+
+#### Monitoramento de Recursos
+```bash
+# Uso de recursos dos containers
+docker stats
+
+# Espaço em disco dos volumes
+docker system df -v
+```
+
+### Soluções por Erro
+
+#### "Connection refused" no EvidentlyAI
+1. Verificar se o container está rodando: `docker-compose ps`
+2. Verificar logs: `make logs-evidently`
+3. Aguardar inicialização completa (até 60s)
+4. Verificar configurações de rede: `docker-compose config`
+
+#### MinIO Console inacessível
+1. Verificar porta 9001: `netstat -an | grep 9001`
+2. Tentar acessar via IP: `http://127.0.0.1:9001`
+3. Verificar logs: `make logs-minio`
+4. Resetar senha: Ver seção de configuração
+
+#### Workspace vazio após restart
+1. Verificar bind mount: `ls -la ./workspace`
+2. Verificar permissões: `ls -la`
+3. Verificar volumes: `docker volume ls`
+4. Restaurar backup se necessário
+
+## 🚀 Produção
+
+### Configurações de Produção
+
+#### docker-compose.prod.yaml
+```yaml
+version: '3.8'
+services:
+  evidently-service:
+    image: evidently/evidently-service:latest
+    restart: always
+    environment:
+      - EVIDENTLY_WORKSPACE_PATH=/app/workspace
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  minio:
+    image: minio/minio:latest
+    restart: always
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+```
+
+#### Variáveis de Produção
+```bash
+# .env.production
+EVIDENTLY_SERVER_HOST=0.0.0.0
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=senha-super-secreta-123
+DEBUG_MODE=false
+LOG_LEVEL=WARNING
+REQUEST_TIMEOUT=60
+```
+
+### Proxy Reverso
+
+#### Nginx Configuration
+```nginx
+upstream evidently {
+    server localhost:8000;
+}
+
+server {
+    listen 80;
+    server_name evidently.mycompany.com;
+    
+    location / {
+        proxy_pass http://evidently;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### Monitoramento
+
+#### Health Checks
+```bash
+#!/bin/bash
+# health-check.sh
+curl -f http://localhost:8000/health || exit 1
+curl -f http://localhost:9000/minio/health/live || exit 1
+echo "All services healthy"
+```
+
+#### Alertas Básicos
+```bash
+#!/bin/bash
+# alerts.sh
+if ! curl -f http://localhost:8000/health > /dev/null 2>&1; then
+    echo "EvidentlyAI DOWN" | mail -s "Alert: EvidentlyAI" admin@company.com
+fi
+```
+
+### Backup Automatizado
+
+#### Script de Backup
+```bash
+#!/bin/bash
+# backup.sh
+BACKUP_DIR="/backups/evidently"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+# Backup workspace
+tar -czf "$BACKUP_DIR/workspace_$DATE.tar.gz" ./workspace
+
+# Backup MinIO
+docker run --rm \
+  -v evidentlyai_server_minio_data:/data \
+  -v "$BACKUP_DIR":/backup \
+  busybox tar czf "/backup/minio_$DATE.tar.gz" /data
+
+# Limpar backups antigos (> 30 dias)
+find "$BACKUP_DIR" -name "*.tar.gz" -mtime +30 -delete
+```
+
+#### Cron para Backup Diário
+```bash
+# crontab -e
+0 2 * * * /path/to/backup.sh
+```
+
+### Segurança
+
+#### Configurações de Segurança
+```yaml
+# Adicionar ao docker-compose.yaml
+services:
+  evidently-service:
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+```
+
+#### Firewall Rules
+```bash
+# Permitir apenas portas necessárias
+sudo ufw allow 8000/tcp  # EvidentlyAI
+sudo ufw allow 9001/tcp  # MinIO Console (apenas admin)
+sudo ufw deny 9000/tcp   # MinIO API (apenas interno)
 ```
 
 ## 🤝 Contribuição
 
-### Como Contribuir
-
-1. **Fork** do repositório
-2. Crie uma **branch** para sua feature (`git checkout -b feature/nova-funcionalidade`)
-3. **Commit** suas mudanças (`git commit -am 'Adiciona nova funcionalidade'`)
-4. **Push** para a branch (`git push origin feature/nova-funcionalidade`)
-5. Crie um **Pull Request**
-
-### Padrões de Código
+### Desenvolvimento Local
 
 ```bash
-# Formatting com black
-black .
+# Fork e clone
+git clone https://github.com/your-user/evidentlyai_server.git
+cd evidentlyai_server
 
-# Linting com ruff
-ruff check .
+# Criar branch para feature
+git checkout -b feature/nova-funcionalidade
 
-# Type checking com mypy
-mypy src/
+# Fazer alterações e testar
+make run
+# ... fazer testes ...
+
+# Commit e push
+git add .
+git commit -m "feat: nova funcionalidade"
+git push origin feature/nova-funcionalidade
 ```
 
-### Testes
+### Reportar Issues
 
-```bash
-# Executar todos os testes
-pytest
+Ao reportar problemas, inclua:
+- Versão do Docker e Docker Compose
+- Sistema operacional
+- Logs relevantes (`make logs`)
+- Passos para reproduzir
+- Configurações (.env mascarado)
 
-# Testes com coverage
-pytest --cov=src/
+### Sugestões de Melhorias
 
-# Testes específicos
-pytest tests/test_client.py::test_create_project
-```
-
-## 📝 Licença
-
-Este projeto está licenciado sob a [MIT License](LICENSE).
-
-## 🔗 Links Úteis
-
-- **Documentação Oficial**: https://docs.evidentlyai.com/
-- **GitHub EvidentlyAI**: https://github.com/evidentlyai/evidently
-- **Community Discord**: https://discord.gg/xZjKRaNp8b
-- **Evidently Cloud**: https://www.evidentlyai.com/
-- **Exemplos e Tutoriais**: https://github.com/evidentlyai/evidently/tree/main/examples
-
-## 📞 Suporte
-
-- **Issues**: Reporte bugs e solicite features via [GitHub Issues](https://github.com/seu-repo/issues)
-- **Discussões**: Participe das discussões da comunidade
-- **Email**: contato@seudominio.com
+- Configurações adicionais
+- Novos comandos no Makefile
+- Documentação melhorada
+- Scripts de automação
+- Integrações com outras ferramentas
 
 ---
 
-**⭐ Se este projeto foi útil, considere dar uma estrela no GitHub!**
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
+
+## 🔗 Links Úteis
+
+- [EvidentlyAI Documentation](https://docs.evidentlyai.com/)
+- [MinIO Documentation](https://docs.min.io/)
+- [Docker Compose Reference](https://docs.docker.com/compose/)
+- [EvidentlyAI GitHub](https://github.com/evidentlyai/evidently)
+
+---
+
+**⚡ Tip**: Para uma experiência otimizada, considere usar um SSD e pelo menos 4GB de RAM em produção.

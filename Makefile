@@ -22,9 +22,6 @@ restart:
 status:
 	docker-compose ps
 
-demo:
-	python remote_demo_project.py
-
 clear_all:
 	docker-compose down --rmi all --volumes --remove-orphans
 
@@ -39,7 +36,6 @@ help:
 	@echo "make logs        - show logs of all containers"
 	@echo "make logs-evidently - show logs of evidently service only"
 	@echo "make logs-minio  - show logs of minio service only"
-	@echo "make demo        - run the demo project script"
 	@echo "make clear_all   - clear all containers, images, volumes and orphans"
 	@echo "make help        - show this help message"
 	@echo ""
