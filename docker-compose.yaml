@@ -19,8 +19,8 @@ services:
     image: minio/minio:latest
     container_name: evidently-minio
     ports:
-      - "9000:9000"  # MinIO API
-      - "9001:9001"  # MinIO Console
+      - "9003:9000"  # MinIO API
+      - "9002:9001"  # MinIO Console
     volumes:
       - minio_data:/data
     environment:
